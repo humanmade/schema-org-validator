@@ -322,8 +322,11 @@ final class RuleProfile implements Profile
         if ($value === null || $value === [] || (is_string($value) && trim($value) === '')) {
             return [];
         }
-        if (is_array($value) && array_key_exists('@value', $value) && trim((string) $value['@value']) === '') {
-            return [];
+        if (is_array($value) && array_key_exists('@value', $value)) {
+            $inner = $value['@value'];
+            if ($inner === null || (is_string($inner) && trim($inner) === '')) {
+                return [];
+            }
         }
 
         return [[$value, $path]];
