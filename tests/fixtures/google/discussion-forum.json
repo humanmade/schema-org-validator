@@ -1,0 +1,22 @@
+{
+  "valid": {
+    "@type": "DiscussionForumPosting",
+    "author": {
+      "@type": "Person",
+      "name": "Jane Doe"
+    },
+    "datePublished": "2030-01-01T10:00:00Z",
+    "text": "Hello everyone"
+  },
+  "missing": {
+    "property": "datePublished",
+    "jsonld": {
+      "@type": "DiscussionForumPosting",
+      "author": {
+        "@type": "Person",
+        "name": "Jane Doe"
+      },
+      "text": "Hello everyone"
+    }
+  }
+}

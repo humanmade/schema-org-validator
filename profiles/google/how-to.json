@@ -1,0 +1,12 @@
+{
+  "id": "google/how-to",
+  "title": "Google How-to",
+  "source": "https://developers.google.com/search/updates",
+  "checked": "2026-10-06",
+  "status": "deprecated",
+  "statusNote": "Google dropped the How-to rich result in September 2023 and removed the documentation.",
+  "types": ["HowTo"],
+  "required": [],
+  "recommended": [],
+  "notes": []
+}

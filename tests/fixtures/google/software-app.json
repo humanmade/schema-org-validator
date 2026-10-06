@@ -1,0 +1,30 @@
+{
+  "valid": {
+    "@type": "SoftwareApplication",
+    "name": "App",
+    "offers": {
+      "@type": "Offer",
+      "price": "0"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": 4.5,
+      "ratingCount": 10
+    }
+  },
+  "missing": {
+    "property": "name",
+    "jsonld": {
+      "@type": "SoftwareApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 4.5,
+        "ratingCount": 10
+      }
+    }
+  }
+}

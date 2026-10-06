@@ -266,7 +266,7 @@ final class RuleProfileTest extends TestCase
 
     public function testGoogleArticleProfileOnAGraph(): void
     {
-        $validator = new Validator(null, ...Profiles::google());
+        $validator = new Validator(null, ...Profiles::google('google/article'));
 
         $valid = $validator->validate((string) file_get_contents(__DIR__ . '/fixtures/valid-article.json'));
         $this->assertSame([], $valid->issues());
@@ -278,9 +278,54 @@ final class RuleProfileTest extends TestCase
         ]);
         $this->assertTrue($report->isValid());
         $this->assertSame(
-            ['author.url', 'datePublished', 'dateModified', 'image'],
+            ['author.url or author.sameAs', 'dateModified', 'datePublished', 'image'],
             array_map(static fn (Issue $i): ?string => $i->property(), $report->warnings())
         );
         $this->assertSame('google/article', $report->warnings()[0]->source());
+    }
+
+    public function testRulesCanBeLimitedToTypes(): void
+    {
+        $profile = [
+            'types' => ['Review', 'AggregateRating'],
+            'required' => [
+                ['path' => 'author', 'types' => ['Review']],
+                ['anyOf' => ['ratingCount', 'reviewCount'], 'types' => ['AggregateRating']],
+            ],
+        ];
+
+        $this->assertSame(['missing_required  author'], $this->summary($this->validateWith($profile, [
+            '@type' => 'Review',
+            'reviewRating' => ['@type' => 'Rating', 'ratingValue' => 5],
+        ])));
+        $this->assertSame(
+            ['missing_required  ratingCount or reviewCount'],
+            $this->summary($this->validateWith($profile, ['@type' => 'AggregateRating', 'ratingValue' => 4]))
+        );
+        $this->assertSame([], $this->validateWith($profile, [
+            '@type' => 'AggregateRating',
+            'reviewCount' => 3,
+        ]));
+    }
+
+    public function testNotesAreKeptButNotChecked(): void
+    {
+        $profile = new RuleProfile([
+            'id' => 'test/notes',
+            'types' => ['Article'],
+            'notes' => ['Not checked: the headline must be short.'],
+        ]);
+
+        $this->assertSame(['Not checked: the headline must be short.'], $profile->notes());
+        $this->assertSame([], (new Validator(null, $profile))->validate(['@type' => 'Article'])->issues());
+    }
+
+    public function testGoogleProfilesCanBeSelectedById(): void
+    {
+        $this->assertSame(
+            ['google/article', 'google/video'],
+            array_map(static fn ($p) => $p->id(), Profiles::google('video', 'google/article'))
+        );
+        $this->assertSame([], Profiles::google('nope'));
     }
 }

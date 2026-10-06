@@ -1,0 +1,45 @@
+{
+  "id": "google/dataset",
+  "title": "Google Dataset",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/dataset",
+  "checked": "2026-09-08",
+  "status": "limited",
+  "statusNote": "Clarified Nov 2025: Dataset markup is only used by Google Dataset Search, not Google Search results (as part of the search simplification). Page still live.",
+  "types": ["Dataset"],
+  "required": [
+    "description",
+    "name",
+    {"path": "distribution.contentUrl", "ifPresent": "distribution"}
+  ],
+  "recommended": [
+    "alternateName",
+    "citation",
+    "creator",
+    "funder",
+    "hasPart",
+    "isPartOf",
+    "identifier",
+    "isAccessibleForFree",
+    "keywords",
+    "license",
+    "measurementTechnique",
+    "sameAs",
+    "spatialCoverage",
+    "temporalCoverage",
+    "variableMeasured",
+    "version",
+    "url",
+    "includedInDataCatalog",
+    "distribution",
+    {"path": "distribution.encodingFormat", "ifPresent": "distribution"}
+  ],
+  "notes": [
+    "Not checked: description must be 50 to 5000 characters.",
+    "description must be 50-5000 characters (may include Markdown;",
+    "JSON-LD newlines as \\n).",
+    "Limit all textual properties to 5000 chars. hasPart or isPartOf (URL or Dataset; a Dataset value must itself carry all required Dataset properties). creator/funder: Person or Organization (use ORCID / ROR in sameAs).",
+    "Use license URL that identifies a specific version. temporalCoverage ISO 8601 (open ended '..'). measurementTechnique and variableMeasured are pending at schema.org. distribution is DataDownload: contentUrl required, encodingFormat recommended.",
+    "Tabular datasets (CSVW) are beta.",
+    "Known RRT warnings: organization contactType, csvw:Table as mainEntity."
+  ]
+}

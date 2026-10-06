@@ -1,0 +1,31 @@
+{
+  "valid": {
+    "@type": "Review",
+    "author": {
+      "@type": "Person",
+      "name": "Jane Doe"
+    },
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": 5
+    },
+    "itemReviewed": {
+      "@type": "Product",
+      "name": "Widget"
+    }
+  },
+  "missing": {
+    "property": "author",
+    "jsonld": {
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": 5
+      },
+      "itemReviewed": {
+        "@type": "Product",
+        "name": "Widget"
+      }
+    }
+  }
+}

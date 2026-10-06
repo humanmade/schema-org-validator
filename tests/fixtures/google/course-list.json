@@ -1,0 +1,14 @@
+{
+  "valid": {
+    "@type": "Course",
+    "name": "Intro to PHP",
+    "description": "Learn the basics."
+  },
+  "missing": {
+    "property": "name",
+    "jsonld": {
+      "@type": "Course",
+      "description": "Learn the basics."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "google/faq",
+  "title": "Google FAQ",
+  "source": "https://developers.google.com/search/updates",
+  "checked": "2026-10-06",
+  "status": "deprecated",
+  "statusNote": "Google stopped showing FAQ rich results on 2026-05-07 and removed the documentation in June 2026.",
+  "types": ["FAQPage"],
+  "required": [],
+  "recommended": [],
+  "notes": []
+}

@@ -1,0 +1,28 @@
+{
+  "id": "google/profile-page",
+  "title": "Google Profile page",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/profile-page",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active.",
+  "types": ["ProfilePage"],
+  "required": [
+    "mainEntity",
+    {"anyOf": ["mainEntity.name", "mainEntity.alternateName"]}
+  ],
+  "recommended": [
+    "dateCreated",
+    "dateModified",
+    {"path": "mainEntity.agentInteractionStatistic", "ifPresent": "mainEntity"},
+    {"path": "mainEntity.alternateName", "ifPresent": "mainEntity"},
+    {"path": "mainEntity.description", "ifPresent": "mainEntity"},
+    {"path": "mainEntity.identifier", "ifPresent": "mainEntity"},
+    {"path": "mainEntity.image", "ifPresent": "mainEntity"},
+    {"path": "mainEntity.interactionStatistic", "ifPresent": "mainEntity"},
+    {"path": "mainEntity.sameAs", "ifPresent": "mainEntity"}
+  ],
+  "notes": [
+    "mainEntity is Person or Organization (default Person if unknown). name required, but alternateName can satisfy the requirement if name is unavailable. interactionStatistic types: FollowAction, LikeAction, BefriendAction. agentInteractionStatistic types: FollowAction, LikeAction, WriteAction, ShareAction.",
+    "Do not use placeholder images."
+  ]
+}

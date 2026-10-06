@@ -1,0 +1,38 @@
+{
+  "valid": {
+    "@type": "VacationRental",
+    "name": "Seaside villa",
+    "identifier": "villa-1",
+    "image": [
+      "https://example.com/1.jpg"
+    ],
+    "latitude": 48.85661,
+    "longitude": 2.35222,
+    "containsPlace": {
+      "@type": "Accommodation",
+      "occupancy": {
+        "@type": "QuantitativeValue",
+        "value": 4
+      }
+    }
+  },
+  "missing": {
+    "property": "identifier",
+    "jsonld": {
+      "@type": "VacationRental",
+      "name": "Seaside villa",
+      "image": [
+        "https://example.com/1.jpg"
+      ],
+      "latitude": 48.85661,
+      "longitude": 2.35222,
+      "containsPlace": {
+        "@type": "Accommodation",
+        "occupancy": {
+          "@type": "QuantitativeValue",
+          "value": 4
+        }
+      }
+    }
+  }
+}

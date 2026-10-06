@@ -1,0 +1,14 @@
+{
+  "valid": {
+    "@type": "LocalBusiness",
+    "name": "Corner Shop",
+    "address": "1 Main Street, Springfield"
+  },
+  "missing": {
+    "property": "address",
+    "jsonld": {
+      "@type": "LocalBusiness",
+      "name": "Corner Shop"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "google/software-app",
+  "title": "Google Software app",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/software-app",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active. Rich result not shown for VideoGame-only markup; co-type VideoGame with another type.",
+  "types": ["SoftwareApplication", "MobileApplication", "WebApplication"],
+  "required": [
+    "name",
+    "offers.price",
+    {"anyOf": ["aggregateRating", "review"]}
+  ],
+  "recommended": [
+    "applicationCategory",
+    "operatingSystem",
+    {"path": "offers.priceCurrency", "ifPresent": "offers"}
+  ],
+  "notes": [
+    "offers.price is required; use 0 for free apps.",
+    "If price > 0, offers.priceCurrency is recommended (page: 'we recommend also including').",
+    "One of aggregateRating or review is required (see Review snippet rules). applicationCategory must be one of: GameApplication, SocialNetworkingApplication, TravelApplication, ShoppingApplication, SportsApplication, LifestyleApplication, BusinessApplication, DesignApplication, DeveloperApplication, DriverApplication, EducationalApplication, HealthApplication, FinanceApplication, SecurityApplication, BrowserApplication, CommunicationApplication, DesktopEnhancementApplication, EntertainmentApplication, MultimediaApplication, HomeApplication, UtilitiesApplication, ReferenceApplication. operatingSystem e.g.",
+    "'Windows 7'."
+  ]
+}

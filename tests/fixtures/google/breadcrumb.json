@@ -1,0 +1,19 @@
+{
+  "valid": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://example.com/"
+      }
+    ]
+  },
+  "missing": {
+    "property": "itemListElement",
+    "jsonld": {
+      "@type": "BreadcrumbList"
+    }
+  }
+}

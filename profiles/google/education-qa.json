@@ -1,0 +1,29 @@
+{
+  "id": "google/education-qa",
+  "title": "Google Education Q&A",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/education-qa",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active but narrow: carousel only for education-related queries (desktop and mobile); English and Portuguese everywhere, Spanish in Mexico, Vietnamese everywhere. Flashcards only (eduQuestionType must be Flashcard).",
+  "types": ["Quiz"],
+  "required": [
+    "hasPart",
+    {"path": "hasPart.acceptedAnswer", "ifPresent": "hasPart"},
+    {"path": "hasPart.acceptedAnswer.text", "ifPresent": "hasPart.acceptedAnswer"},
+    {"path": "hasPart.eduQuestionType", "ifPresent": "hasPart"},
+    {"path": "hasPart.text", "ifPresent": "hasPart"}
+  ],
+  "recommended": [
+    "about",
+    {"path": "about.name", "ifPresent": "about"},
+    "educationalAlignment",
+    {"path": "educationalAlignment.alignmentType", "ifPresent": "educationalAlignment"},
+    {"path": "educationalAlignment.targetName", "ifPresent": "educationalAlignment"}
+  ],
+  "notes": [
+    "Quiz.hasPart is a Question, one per flashcard (repeat for more).",
+    "Question requires acceptedAnswer (exactly one Answer), eduQuestionType fixed value Flashcard, text.",
+    "Answer text (shown in the example; the page's Answer table was not separately listed beyond acceptedAnswer text). educationalAlignment.alignmentType values: educationalSubject, educationalLevel.",
+    "Single-question pages with user answers should use QAPage."
+  ]
+}

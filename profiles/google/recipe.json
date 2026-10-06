@@ -1,0 +1,44 @@
+{
+  "id": "google/recipe",
+  "title": "Google Recipe",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/recipe",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active.",
+  "types": ["Recipe"],
+  "required": [
+    "image",
+    "name",
+    {"path": "recipeYield", "ifPresent": "nutrition.calories"}
+  ],
+  "recommended": [
+    "aggregateRating",
+    "author",
+    "cookTime",
+    "datePublished",
+    "description",
+    "keywords",
+    {"path": "nutrition.calories", "ifPresent": "nutrition"},
+    "prepTime",
+    "recipeCategory",
+    "recipeCuisine",
+    "recipeIngredient",
+    "recipeInstructions",
+    "recipeYield",
+    "totalTime",
+    "video"
+  ],
+  "notes": [
+    "Not checked: use cookTime and prepTime together, or totalTime, or both.",
+    "Not checked: HowToStep recommends name, image, url and video; HowToSection requires itemListElement and name; HowToStep requires text or itemListElement; HowToDirection and HowToTip require text.",
+    "Not checked: a recipe carousel (ItemList) requires itemListElement with position and url.",
+    "Required: image (URL or ImageObject; the completed dish) and name. nutrition.calories requires recipeYield. cookTime and prepTime are to be used together; or use totalTime (or both).",
+    "Durations are ISO 8601. recipeInstructions: HowToStep recommended;",
+    "HowToSection only for multi-section recipes.",
+    "HowToSection: required itemListElement (HowToStep) and name.",
+    "HowToStep: required text OR itemListElement (HowToDirection/HowToTip); recommended image, name, url, video.",
+    "HowToDirection/HowToTip: required text.",
+    "If a single review is present the reviewer name must be a valid person/organization.",
+    "Host carousel (ItemList): required itemListElement (ListItem) with position and url. keywords: comma separated, do not duplicate recipeCategory/recipeCuisine."
+  ]
+}
