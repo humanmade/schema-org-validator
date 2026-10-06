@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="schema-org-validator">
+	<description>PSR-12 for the schema.org validator.</description>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<file>src</file>
+	<file>tests</file>
+	<file>bin</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/data/*</exclude-pattern>
+	<exclude-pattern>*/tests/fixtures/*</exclude-pattern>
+
+	<rule ref="PSR12"/>
+</ruleset>
