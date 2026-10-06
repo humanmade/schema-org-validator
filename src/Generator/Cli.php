@@ -68,7 +68,9 @@ final class Cli
             }
 
             $data = $generator->build($jsonld, $version);
-            file_put_contents($output, $generator->export($data));
+            if (file_put_contents($output, $generator->export($data)) === false) {
+                throw new RuntimeException(sprintf('Could not write %s.', $output));
+            }
         } catch (Throwable $e) {
             fwrite(STDERR, $e->getMessage() . "\n");
 
