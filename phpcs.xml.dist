@@ -8,7 +8,6 @@
 
 	<file>src</file>
 	<file>tests</file>
-	<file>bin</file>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/data/*</exclude-pattern>

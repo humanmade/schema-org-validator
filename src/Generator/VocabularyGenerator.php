@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace HumanMade\SchemaOrgValidator\Generator;
 
+use HumanMade\SchemaOrgValidator\Vocabulary;
 use RuntimeException;
 
 /**
  * Turns the schema.org JSON-LD dump into the array stored in data/vocabulary.php.
+ *
+ * @phpstan-import-type VocabularyData from Vocabulary
  */
 final class VocabularyGenerator
 {
@@ -20,7 +23,7 @@ final class VocabularyGenerator
      * Builds the vocabulary array from a decoded schemaorg-current-https.jsonld document.
      *
      * @param array<string, mixed> $jsonld
-     * @return array<string, mixed>
+     * @return VocabularyData
      */
     public function build(array $jsonld, string $version): array
     {
@@ -120,7 +123,7 @@ final class VocabularyGenerator
     /**
      * Renders the vocabulary array as deterministic PHP source.
      *
-     * @param array<string, mixed> $data
+     * @param VocabularyData $data
      */
     public function export(array $data): string
     {
