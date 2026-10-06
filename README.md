@@ -104,7 +104,7 @@ $profile = HumanMade\SchemaOrgValidator\RuleProfile::fromFile('my-profile.json')
 A rule is one of these:
 
 - A property path such as `"headline"`, or a nested path such as `"offers.price"`.
-- `{ "anyOf": [path, ...] }`, which passes when any path is present.
+- `{ "anyOf": [path, ...] }`, which passes when any path is present. When every path starts with the same segments, such as `offers.price` and `offers.priceSpecification.price`, each value at that shared path (each offer) must have at least one of the paths after it.
 - `{ "path": "offers.price", "ifPresent": "offers" }`, which is only checked when the `ifPresent` path has a value.
 
 A rule object can also have `"types": ["Review"]`, which limits it to nodes of those types or their subtypes. Use this when one profile covers several root types with different rules.

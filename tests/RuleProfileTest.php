@@ -90,6 +90,123 @@ final class RuleProfileTest extends TestCase
         $this->assertSame('image or thumbnailUrl', $issues[0]->property());
     }
 
+    public function testAnyOfIsCheckedPerValueAtTheSharedPrefix(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['anyOf' => ['offers.price', 'offers.priceSpecification.price']],
+        ]];
+        $product = [
+            '@type' => 'Product',
+            'offers' => [
+                ['@type' => 'Offer', 'price' => '10'],
+                ['@type' => 'Offer', 'priceSpecification' => ['@type' => 'PriceSpecification', 'price' => '12']],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $product));
+
+        $product['offers'][] = ['@type' => 'Offer', 'url' => 'https://example.com/offer'];
+        $issues = $this->validateWith($profile, $product);
+        $this->assertSame(
+            ['missing_required /offers/2 offers.price or offers.priceSpecification.price'],
+            $this->summary($issues)
+        );
+
+        unset($product['offers']);
+        $this->assertSame(
+            ['missing_required  offers.price or offers.priceSpecification.price'],
+            $this->summary($this->validateWith($profile, $product))
+        );
+    }
+
+    public function testAnyOfSharedPrefixFollowsReferences(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [['anyOf' => ['offers.price', 'offers.lowPrice']]]];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Product', 'offers' => [['@id' => '#one'], ['@id' => '#two']]],
+                ['@type' => 'Offer', '@id' => '#one', 'price' => '10'],
+                ['@type' => 'AggregateOffer', '@id' => '#two', 'url' => 'https://example.com/two'],
+            ],
+        ];
+
+        $this->assertSame(
+            ['missing_required /@graph/2 offers.price or offers.lowPrice'],
+            $this->summary($this->validateWith($profile, $graph))
+        );
+
+        $graph['@graph'][2]['lowPrice'] = '5';
+        $this->assertSame([], $this->validateWith($profile, $graph));
+    }
+
+    public function testAnyOfWithoutASharedPrefixNeedsOneAlternativeOnTheNode(): void
+    {
+        $profile = ['required' => [['anyOf' => ['author.name', 'publisher.name']]]];
+        $article = [
+            '@type' => 'Article',
+            'author' => [['@type' => 'Person', 'name' => 'Jane'], ['@type' => 'Person']],
+            'publisher' => ['@type' => 'Organization', 'name' => 'Acme'],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $article));
+
+        unset($article['publisher']);
+        $this->assertSame(
+            ['missing_required /author/1 author.name or publisher.name'],
+            $this->summary($this->validateWith($profile, $article))
+        );
+    }
+
+    public function testAnyOfSharedPrefixRespectsIfPresent(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['anyOf' => ['offers.price', 'offers.lowPrice'], 'ifPresent' => 'offers'],
+        ]];
+
+        $this->assertSame([], $this->validateWith($profile, ['@type' => 'Product']));
+        $this->assertCount(1, $this->validateWith($profile, ['@type' => 'Product', 'offers' => ['@type' => 'Offer']]));
+    }
+
+    public function testGoogleProductProfilesAcceptOffersThatUseDifferentPriceProperties(): void
+    {
+        $product = [
+            '@type' => 'Product',
+            'name' => 'Widget',
+            'image' => 'https://example.com/widget.jpg',
+            'offers' => [
+                ['@type' => 'Offer', 'price' => '10', 'priceCurrency' => 'USD'],
+                [
+                    '@type' => 'Offer',
+                    'priceSpecification' => [
+                        '@type' => 'PriceSpecification',
+                        'price' => '12',
+                        'priceCurrency' => 'USD',
+                    ],
+                ],
+            ],
+        ];
+        $validator = new Validator(null, ...Profiles::google('google/merchant-listing', 'google/product-snippet'));
+        $anyOf = [
+            'offers.price or offers.priceSpecification.price',
+            'offers.priceCurrency or offers.priceSpecification.priceCurrency',
+        ];
+        $properties = static fn (array $issues): array => array_map(
+            static fn (Issue $i): ?string => $i->property(),
+            array_filter($issues, static fn (Issue $i): bool => $i->code() === 'missing_required')
+        );
+
+        $found = $properties($validator->validate($product)->issues());
+        $this->assertSame([], array_intersect($found, $anyOf));
+        $this->assertSame([], array_filter(
+            (new Validator(null, ...Profiles::google('google/product-snippet')))->validate($product)->errors(),
+            static fn (Issue $i): bool => $i->source() === 'google/product-snippet'
+        ));
+
+        $product['offers'][] = ['@type' => 'Offer', 'url' => 'https://example.com/offer'];
+        $found = $properties($validator->validate($product)->issues());
+        $this->assertSame($anyOf, array_values(array_intersect($found, $anyOf)));
+    }
+
     public function testNestedPathThroughAnArray(): void
     {
         $profile = ['required' => ['author.name']];
