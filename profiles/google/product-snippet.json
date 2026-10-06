@@ -1,0 +1,40 @@
+{
+  "id": "google/product-snippet",
+  "title": "Google Product snippet",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/product-snippet",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active.",
+  "types": ["Product"],
+  "required": [
+    "name",
+    {"anyOf": ["review", "aggregateRating", "offers"]},
+    {"anyOf": ["offers.price", "offers.priceSpecification.price", "offers.lowPrice"], "ifPresent": "offers"},
+    {"path": "review.positiveNotes.itemListElement.name", "ifPresent": "review.positiveNotes"},
+    {"path": "review.negativeNotes.itemListElement.name", "ifPresent": "review.negativeNotes"}
+  ],
+  "recommended": [
+    "aggregateRating",
+    "offers",
+    "review",
+    {"path": "offers.availability", "ifPresent": "offers"},
+    {"path": "offers.priceValidUntil", "ifPresent": "offers"},
+    {"path": "offers.priceSpecification.priceCurrency", "ifPresent": "offers.priceSpecification"},
+    {"path": "review.positiveNotes", "ifPresent": "review"},
+    {"path": "review.negativeNotes", "ifPresent": "review"},
+    {"path": "review.positiveNotes.itemListElement.position", "ifPresent": "review.positiveNotes.itemListElement"},
+    {"path": "review.negativeNotes.itemListElement.position", "ifPresent": "review.negativeNotes.itemListElement"}
+  ],
+  "notes": [
+    "An Offer needs price or priceSpecification.price; an AggregateOffer needs lowPrice, so lowPrice is accepted too.",
+    "Not checked: AggregateOffer requires lowPrice and priceCurrency and recommends highPrice and offerCount.",
+    "Not checked: an editorial review that uses positiveNotes or negativeNotes needs at least two statements in total.",
+    "Need ONE of review, aggregateRating, offers (the Rich Results Test warns if only offers is given).",
+    "Offer: price (or priceSpecification.price) required; price may be 0 for free; if both price and priceSpecification given, price wins. priceCurrency recommended here (required for merchant listings). availability: single value, schema.org ItemAvailability (BackOrder, Discontinued, InStock, InStoreOnly, LimitedAvailability, OnlineOnly, OutOfStock, PreOrder, PreSale, SoldOut; short names accepted). priceValidUntil Date; past date may suppress the snippet.",
+    "AggregateOffer (don't use for variants): required lowPrice, priceCurrency; recommended highPrice, offerCount; price-drop enhancement needs Offer not AggregateOffer.",
+    "Reviewer name must be a valid Person or Team name.",
+    "Pros/cons: editorial review needs at least two statements across positiveNotes/negativeNotes (ItemList with ListItem.name required, position recommended).",
+    "Review and AggregateRating sub-rules: see Review snippet.",
+    "UnitPriceSpecification: price required, priceCurrency recommended."
+  ]
+}

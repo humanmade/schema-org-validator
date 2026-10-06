@@ -1,0 +1,12 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": "https://example.com/a",
+      "publisher": {
+        "@id": "https://example.com/#org"
+      }
+    }
+  ]
+}

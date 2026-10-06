@@ -1,9 +1,11 @@
-The file data/vocabulary.php is derived from the schema.org vocabulary (https://schema.org), released by the schema.org community and its sponsors.
+The file data/vocabulary.php is derived from the schema.org vocabulary (https://schema.org), which is published by schema.org and its sponsors.
 
-The schema.org terms of service are at https://schema.org/docs/terms.html.
+Schema.org's terms of service say: "The Sponsors' copyrights in the schema are licensed to website publishers and other third parties under the Creative Commons Attribution-ShareAlike License (version 3.0)."
 
-Licence of this data: CC BY-SA 3.0
+Source: https://schema.org/docs/terms.html
 
-TODO: replace this line with the verified licence statement and link from the schema.org terms page.
+Licence: Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0), https://creativecommons.org/licenses/by-sa/3.0/
+
+Attribution: schema.org vocabulary, https://schema.org. The data in vocabulary.php is generated from the official JSON-LD dump by bin/generate-vocabulary and has been reformatted.
 
 The GPL-2.0-or-later licence in the repository root applies to the code, not to the files in this directory.

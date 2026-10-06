@@ -1,0 +1,28 @@
+{
+  "valid": {
+    "@type": "QAPage",
+    "mainEntity": {
+      "@type": "Question",
+      "name": "How do I?",
+      "answerCount": 1,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Like this."
+      }
+    }
+  },
+  "missing": {
+    "property": "mainEntity.answerCount",
+    "jsonld": {
+      "@type": "QAPage",
+      "mainEntity": {
+        "@type": "Question",
+        "name": "How do I?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Like this."
+        }
+      }
+    }
+  }
+}

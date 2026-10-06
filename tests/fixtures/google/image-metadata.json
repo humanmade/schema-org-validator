@@ -1,0 +1,14 @@
+{
+  "valid": {
+    "@type": "ImageObject",
+    "contentUrl": "https://example.com/a.jpg",
+    "creditText": "Example Photos"
+  },
+  "missing": {
+    "property": "contentUrl or url",
+    "jsonld": {
+      "@type": "ImageObject",
+      "creditText": "Example Photos"
+    }
+  }
+}

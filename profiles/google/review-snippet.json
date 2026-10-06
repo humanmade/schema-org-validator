@@ -1,0 +1,29 @@
+{
+  "id": "google/review-snippet",
+  "title": "Google Review snippet",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/review-snippet",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active. Review and AggregateRating can be standalone (with itemReviewed) or nested in a parent type through review / aggregateRating.",
+  "types": ["Review", "AggregateRating"],
+  "required": [
+    {"path": "author", "types": ["Review"]},
+    {"path": "reviewRating", "types": ["Review"]},
+    {"path": "reviewRating.ratingValue", "ifPresent": "reviewRating", "types": ["Review"]},
+    {"anyOf": ["ratingCount", "reviewCount"], "types": ["AggregateRating"]},
+    {"path": "ratingValue", "types": ["AggregateRating"]}
+  ],
+  "recommended": [
+    {"path": "datePublished", "types": ["Review"]},
+    {"path": "reviewRating.bestRating", "ifPresent": "reviewRating", "types": ["Review"]},
+    {"path": "reviewRating.worstRating", "ifPresent": "reviewRating", "types": ["Review"]},
+    {"path": "bestRating", "types": ["AggregateRating"]},
+    {"path": "worstRating", "types": ["AggregateRating"]}
+  ],
+  "notes": [
+    "Not checked: a standalone Review or AggregateRating requires itemReviewed and itemReviewed.name. When it is nested in the reviewed item, the parent name is required instead, so these are not checked.",
+    "Nested review/aggregateRating: itemReviewed is omitted (parent is the reviewed item) but the parent's name is still required. itemReviewed.name or parent name required.",
+    "Valid itemReviewed types: Book, Course, CreativeWorkSeason, CreativeWorkSeries, Episode, Event, Game, HowTo, LocalBusiness, MediaObject, Movie, MusicPlaylist, MusicRecording, Organization, Product, Recipe, SoftwareApplication. author is Person or Organization; name must be a valid name and shorter than 100 chars, else not eligible for an author-based snippet. ratingValue: Number or Text (number, fraction, or percentage); default scale 1-5; dot decimal separator; bestRating default 5, worstRating default 1 (not warned by the Rich Results Test).",
+    "AggregateRating: at least one of ratingCount or reviewCount."
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "google/image-metadata",
+  "title": "Google Image metadata",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/image-license-metadata",
+  "checked": "2025-12-10",
+  "status": "active",
+  "statusNote": "Active; powers the Licensable badge and C2PA 'About this image' details. Page last updated earlier than the rest (2025-12-10).",
+  "types": ["ImageObject"],
+  "required": [
+    {"anyOf": ["contentUrl", "url"]},
+    {"anyOf": ["creator", "creditText", "copyrightNotice", "license"]}
+  ],
+  "recommended": [
+    "acquireLicensePage",
+    "creator",
+    {"path": "creator.name", "ifPresent": "creator"},
+    "creditText",
+    "copyrightNotice",
+    "license"
+  ],
+  "notes": [
+    "url is accepted in place of contentUrl but is less precise.",
+    "contentUrl required (url is accepted as fallback but less precise).",
+    "One of creator/creditText/copyrightNotice/license is required; once one is present the other three become recommended in the Rich Results Test. license is needed for the Licensable badge; acquireLicensePage recommended with it. creator is Organization or Person.",
+    "Equivalent IPTC embedded fields: Copyright Notice, Creator, Credit Line, Digital Source Type, Licensor URL, Web Statement of Rights (needed for Licensable badge).",
+    "Digital Source Type values: trainedAlgorithmicMedia, compositeSynthetic, algorithmicMedia, compositeWithTrainedAlgorithmicMedia."
+  ]
+}

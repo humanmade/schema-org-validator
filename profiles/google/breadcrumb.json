@@ -1,0 +1,24 @@
+{
+  "id": "google/breadcrumb",
+  "title": "Google Breadcrumb",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/breadcrumb",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active. data-vocabulary.org markup no longer eligible.",
+  "types": ["BreadcrumbList"],
+  "required": [
+    "itemListElement",
+    {"path": "itemListElement.position", "ifPresent": "itemListElement"}
+  ],
+  "recommended": [
+    {"path": "itemListElement.item", "ifPresent": "itemListElement"},
+    {"path": "itemListElement.name", "ifPresent": "itemListElement"}
+  ],
+  "notes": [
+    "item and name are checked as recommended only: item is not required for the last breadcrumb and name is not required when item is a Thing with its own name.",
+    "Not checked: a BreadcrumbList needs at least two ListItems.",
+    "BreadcrumbList needs at least two ListItems.",
+    "ListItem.item is a URL or a Thing (use @id for the URL in JSON-LD); item is NOT required for the last breadcrumb (Google uses the containing page URL).",
+    "ListItem.name is not required if item is a Thing that has its own name. position is an Integer starting at 1."
+  ]
+}

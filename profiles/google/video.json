@@ -1,0 +1,48 @@
+{
+  "id": "google/video",
+  "title": "Google Video",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/video",
+  "checked": "2026-09-24",
+  "status": "active",
+  "statusNote": "Active. Page updated 2026-09-24 (later than most pages).",
+  "types": ["VideoObject"],
+  "required": [
+    "name",
+    "thumbnailUrl",
+    "uploadDate",
+    {"path": "publication.endDate", "ifPresent": "publication"},
+    {"path": "publication.isLiveBroadcast", "ifPresent": "publication"},
+    {"path": "publication.startDate", "ifPresent": "publication"},
+    {"path": "hasPart.name", "ifPresent": "hasPart"},
+    {"path": "hasPart.startOffset", "ifPresent": "hasPart"},
+    {"path": "hasPart.url", "ifPresent": "hasPart"}
+  ],
+  "recommended": [
+    "contentUrl",
+    "creator",
+    {"path": "creator.name", "ifPresent": "creator"},
+    {"path": "creator.url", "ifPresent": "creator"},
+    "description",
+    "duration",
+    "embedUrl",
+    "expires",
+    "hasPart",
+    "ineligibleRegion",
+    "interactionStatistic",
+    {"path": "interactionStatistic.interactionType", "ifPresent": "interactionStatistic"},
+    {"path": "interactionStatistic.userInteractionCount", "ifPresent": "interactionStatistic"},
+    "publication",
+    "regionsAllowed",
+    {"path": "hasPart.endOffset", "ifPresent": "hasPart"}
+  ],
+  "notes": [
+    "Not checked: SeekToAction needs potentialAction with startOffset-input and target to get automatic key moments; \"startOffset-input\" is not a schema.org property.",
+    "Not checked: hasPart rules are for Clip values.",
+    "Not checked: provide contentUrl or embedUrl; use ineligibleRegion or regionsAllowed, not both.",
+    "Provide contentUrl if possible, else embedUrl (page recommends both; at least one). creator may be replaced by author (creator.name needs name or alternateName). thumbnailUrl is repeated URL. uploadDate ISO 8601, timezone recommended.",
+    "Regions: use ineligibleRegion OR regionsAllowed (ISO 3166-1, 2 or 3 letters). interactionStatistic types: WatchAction, LikeAction, CommentAction, ShareAction (interactionCount still supported).",
+    "BroadcastEvent (LIVE badge) fields required only to get the badge: publication (BroadcastEvent) with isLiveBroadcast, startDate, endDate (endDate required once stream has ended).",
+    "Clip (key moments): name, startOffset, url required; endOffset recommended.",
+    "SeekToAction: potentialAction with startOffset-input and target (EntryPoint with placeholder URL) required only to get automatic key moments."
+  ]
+}

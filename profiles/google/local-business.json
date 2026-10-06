@@ -1,0 +1,37 @@
+{
+  "id": "google/local-business",
+  "title": "Google Local business",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/local-business",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active. Restaurant carousel is limited access (small set of restaurant providers, interest form).",
+  "types": ["LocalBusiness", "Restaurant"],
+  "required": [
+    "address",
+    "name"
+  ],
+  "recommended": [
+    "aggregateRating",
+    "department",
+    "geo",
+    {"path": "geo.latitude", "ifPresent": "geo"},
+    {"path": "geo.longitude", "ifPresent": "geo"},
+    "menu",
+    "openingHoursSpecification",
+    {"path": "openingHoursSpecification.closes", "ifPresent": "openingHoursSpecification"},
+    {"path": "openingHoursSpecification.dayOfWeek", "ifPresent": "openingHoursSpecification"},
+    {"path": "openingHoursSpecification.opens", "ifPresent": "openingHoursSpecification"},
+    {"path": "openingHoursSpecification.validFrom", "ifPresent": "openingHoursSpecification"},
+    {"path": "openingHoursSpecification.validThrough", "ifPresent": "openingHoursSpecification"},
+    "priceRange",
+    "review",
+    "servesCuisine",
+    "telephone",
+    "url"
+  ],
+  "notes": [
+    "Use the most specific LocalBusiness subtype; multiple types as an array (additionalType not supported).",
+    "LocalBusiness is a subtype of Organization so the Organization fields also apply. aggregateRating/review only recommended for sites that capture reviews about OTHER local businesses. geo.latitude/longitude precision at least 5 decimals. openingHoursSpecification: single object or array; dayOfWeek values Monday..Sunday (https://schema.org/ prefix or short names); opens/closes hh:mm:ss; validFrom/validThrough are YYYY-MM-DD seasonal closure dates. priceRange must be shorter than 100 chars.",
+    "Restaurant carousel (limited): Carousel with required image (repeated URL/ImageObject) and name; recommended address, servesCuisine. department is a nested LocalBusiness (name format '{store} {department}')."
+  ]
+}

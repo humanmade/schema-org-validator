@@ -1,0 +1,24 @@
+{
+  "valid": {
+    "@type": "Event",
+    "name": "Concert",
+    "startDate": "2030-05-01T19:00",
+    "location": {
+      "@type": "Place",
+      "name": "Town Hall",
+      "address": "1 Main Street, Springfield"
+    }
+  },
+  "missing": {
+    "property": "name",
+    "jsonld": {
+      "@type": "Event",
+      "startDate": "2030-05-01T19:00",
+      "location": {
+        "@type": "Place",
+        "name": "Town Hall",
+        "address": "1 Main Street, Springfield"
+      }
+    }
+  }
+}

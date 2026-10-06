@@ -1,0 +1,38 @@
+{
+  "valid": {
+    "@type": "JobPosting",
+    "title": "Developer",
+    "description": "<p>Build things.</p>",
+    "datePosted": "2030-01-01",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": "Acme"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "US"
+      }
+    }
+  },
+  "missing": {
+    "property": "title",
+    "jsonld": {
+      "@type": "JobPosting",
+      "description": "<p>Build things.</p>",
+      "datePosted": "2030-01-01",
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": "Acme"
+      },
+      "jobLocation": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "US"
+        }
+      }
+    }
+  }
+}

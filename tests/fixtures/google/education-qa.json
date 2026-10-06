@@ -1,0 +1,20 @@
+{
+  "valid": {
+    "@type": "Quiz",
+    "hasPart": {
+      "@type": "Question",
+      "eduQuestionType": "Flashcard",
+      "text": "Capital of France?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Paris"
+      }
+    }
+  },
+  "missing": {
+    "property": "hasPart",
+    "jsonld": {
+      "@type": "Quiz"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id": "google/event",
+  "title": "Google Event",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/event",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active but restricted: events must be bookable by the general public and held at a physical location; online-event properties were removed in the June 2025 changelog. Ineligible: events needing membership or invitation, school-premises spectator events with minors, virtual-only events; one event per leaf URL; multi-day events need start and end dates.",
+  "types": ["Event"],
+  "required": [
+    "location",
+    {"path": "location.address", "ifPresent": "location"},
+    "name",
+    "startDate"
+  ],
+  "recommended": [
+    "description",
+    "endDate",
+    "eventStatus",
+    "image",
+    {"path": "location.name", "ifPresent": "location"},
+    "offers",
+    {"path": "offers.availability", "ifPresent": "offers"},
+    {"path": "offers.price", "ifPresent": "offers"},
+    {"path": "offers.priceCurrency", "ifPresent": "offers"},
+    {"path": "offers.validFrom", "ifPresent": "offers"},
+    {"path": "offers.url", "ifPresent": "offers"},
+    "organizer",
+    {"path": "organizer.name", "ifPresent": "organizer"},
+    {"path": "organizer.url", "ifPresent": "organizer"},
+    "performer",
+    {"path": "performer.name", "ifPresent": "performer"},
+    "previousStartDate",
+    {"path": "eventStatus", "ifPresent": "previousStartDate"}
+  ],
+  "notes": [
+    "Not checked: previousStartDate requires eventStatus to be EventRescheduled; only the presence of eventStatus is checked.",
+    "Not checked: offers.validFrom is only needed on date-restricted offers.",
+    "location is a Place (set @type Place) with location.address (PostalAddress; a full street address, not just a city) and location.name (recommended, venue name only). eventStatus values: EventScheduled (default), EventCancelled, EventPostponed, EventRescheduled; never remove startDate when status changes. previousStartDate: if present you MUST also set eventStatus to EventRescheduled (and no other status). offers.availability values: InStock, SoldOut, PreOrder; offers.validFrom only required on date-restricted offers; offers.price lowest price incl. fees, 0 if free; offers.priceCurrency ISO 4217. organizer is Organization or Person. performer is Person or PerformingGroup. image: repeated ImageObject or URL, 1920px wide recommended, min 720px."
+  ]
+}

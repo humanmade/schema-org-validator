@@ -1,0 +1,14 @@
+{
+  "valid": {
+    "@type": "Dataset",
+    "name": "Rainfall",
+    "description": "Daily rainfall readings."
+  },
+  "missing": {
+    "property": "description",
+    "jsonld": {
+      "@type": "Dataset",
+      "name": "Rainfall"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "valid": {
+    "@type": "Recipe",
+    "name": "Apple pie",
+    "image": "https://example.com/pie.jpg"
+  },
+  "missing": {
+    "property": "name",
+    "jsonld": {
+      "@type": "Recipe",
+      "image": "https://example.com/pie.jpg"
+    }
+  }
+}

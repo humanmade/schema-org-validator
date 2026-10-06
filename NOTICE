@@ -3,4 +3,4 @@ Copyright (C) Human Made Limited
 
 The source code in this package is licensed under GPL-2.0-or-later (see LICENSE).
 
-The vocabulary data in data/vocabulary.php is generated from the schema.org vocabulary (https://schema.org). Schema.org is a collaborative community activity; its vocabulary is made available under the schema.org data licence. See data/LICENSE for the attribution and licence terms that apply to that file.
+The vocabulary data in data/vocabulary.php is generated from the schema.org vocabulary (https://schema.org). Schema.org is a collaborative community activity. Its vocabulary is made available under the Creative Commons Attribution-ShareAlike License (version 3.0). See data/LICENSE for the attribution and licence terms that apply to that file.

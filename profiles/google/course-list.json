@@ -1,0 +1,21 @@
+{
+  "id": "google/course-list",
+  "title": "Google Course list",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/course",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active (the surviving 'course' page; English only, all regions). Needs markup for at least three courses.",
+  "types": ["Course"],
+  "required": [
+    "description",
+    "name"
+  ],
+  "recommended": [
+    "provider"
+  ],
+  "notes": [
+    "Not checked: a summary page needs an ItemList with itemListElement ListItems that each have a unique canonical position and url.",
+    "Course: description (display limit 60 characters) and name required; provider (Organization) recommended.",
+    "Summary or all-in-one pages must add ItemList: required itemListElement (ListItem) with position and url (each unique, canonical). itemListElement.* belongs to the ItemList node on the list page, not the Course."
+  ]
+}

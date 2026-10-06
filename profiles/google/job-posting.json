@@ -1,0 +1,37 @@
+{
+  "id": "google/job-posting",
+  "title": "Google Job posting",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/job-posting",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active; job experience in Google Search. Payment-required postings are not allowed.",
+  "types": ["JobPosting"],
+  "required": [
+    "datePosted",
+    "description",
+    "hiringOrganization",
+    {"anyOf": ["jobLocation", "applicantLocationRequirements"]},
+    {"path": "jobLocation.address.addressCountry", "ifPresent": "jobLocation"},
+    "title"
+  ],
+  "recommended": [
+    "applicantLocationRequirements",
+    "baseSalary",
+    "directApply",
+    "employmentType",
+    "identifier",
+    "jobLocationType",
+    "validThrough",
+    "educationRequirements",
+    {"path": "educationRequirements.credentialCategory", "ifPresent": "educationRequirements"},
+    "experienceRequirements",
+    {"path": "experienceRequirements.monthsOfExperience", "ifPresent": "experienceRequirements"},
+    "experienceInPlaceOfEducation"
+  ],
+  "notes": [
+    "jobLocation is not required when applicantLocationRequirements is present (a 100% remote job).",
+    "Not checked: validThrough is required only for postings that expire; applicantLocationRequirements and jobLocationType TELECOMMUTE are required for 100% remote jobs; if experienceInPlaceOfEducation is true both experienceRequirements and educationRequirements must be present.",
+    "Conditions: jobLocation is NOT required if applicantLocationRequirements is present (100% remote job); jobLocation must include addressCountry. jobLocationType=TELECOMMUTE and applicantLocationRequirements are 'required' for 100% remote jobs (page lists them under recommended with 'required if' wording); remote jobs need at least one eligible country via applicantLocationRequirements (preferred) or the jobLocation country. validThrough is 'required for job postings that have an expiration date' (omit if none). hiringOrganization: use name 'confidential' for anonymous employers; logo ratio must be 0.75-2.5. description must be HTML; title must not be the same as description and must not use `name`. employmentType values: FULL_TIME, PART_TIME, CONTRACTOR, TEMPORARY, INTERN, VOLUNTEER, PER_DIEM, OTHER (repeatable). baseSalary is MonetaryAmount (employers only); unitText one of HOUR, DAY, WEEK, MONTH, YEAR. educationRequirements.credentialCategory values: high school, associate degree, bachelor degree, professional certificate, postgraduate degree (education/experience properties are marked beta).",
+    "If experienceInPlaceOfEducation is true, both experienceRequirements and educationRequirements must be present."
+  ]
+}

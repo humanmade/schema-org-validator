@@ -1,0 +1,22 @@
+{
+  "id": "google/article",
+  "title": "Google Article",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/article",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Still documented and shown; Google News/Top stories do not require markup.",
+  "types": ["Article", "NewsArticle", "BlogPosting"],
+  "required": [],
+  "recommended": [
+    "author",
+    {"path": "author.name", "ifPresent": "author"},
+    {"anyOf": ["author.url", "author.sameAs"], "ifPresent": "author"},
+    "dateModified",
+    "datePublished",
+    "headline",
+    "image"
+  ],
+  "notes": [
+    "Page says 'There are no required properties'. author is Person or Organization (repeat one author object per author; do not merge names; author.name must hold only the name). author.url may be replaced by sameAs. image: repeated ImageObject or URL, min 50K pixels, ratios 16x9, 4x3, 1x1 recommended. dateModified/datePublished: ISO 8601 with timezone recommended."
+  ]
+}

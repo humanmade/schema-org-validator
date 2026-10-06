@@ -1,0 +1,53 @@
+{
+  "id": "google/discussion-forum",
+  "title": "Google Discussion forum",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/discussion-forum",
+  "checked": "2026-09-08",
+  "status": "active",
+  "statusNote": "Active (Discussions and Forums features).",
+  "types": ["DiscussionForumPosting", "SocialMediaPosting"],
+  "required": [
+    "author",
+    {"path": "author.name", "ifPresent": "author"},
+    "datePublished",
+    {"anyOf": ["text", "image", "video"]},
+    {"path": "comment.author", "ifPresent": "comment"},
+    {"path": "comment.datePublished", "ifPresent": "comment"},
+    {"anyOf": ["comment.text", "comment.image", "comment.video"], "ifPresent": "comment"}
+  ],
+  "recommended": [
+    {"path": "author.url", "ifPresent": "author"},
+    "comment",
+    "commentCount",
+    "creativeWorkStatus",
+    "dateModified",
+    "digitalSourceType",
+    "headline",
+    "image",
+    "interactionStatistic",
+    "isPartOf",
+    "sharedContent",
+    "text",
+    "url",
+    "video",
+    {"path": "comment.author.url", "ifPresent": "comment.author"},
+    {"path": "comment.comment", "ifPresent": "comment"},
+    {"path": "comment.commentCount", "ifPresent": "comment"},
+    {"path": "comment.creativeWorkStatus", "ifPresent": "comment"},
+    {"path": "comment.dateModified", "ifPresent": "comment"},
+    {"path": "comment.digitalSourceType", "ifPresent": "comment"},
+    {"path": "comment.image", "ifPresent": "comment"},
+    {"path": "comment.interactionStatistic", "ifPresent": "comment"},
+    {"path": "comment.sharedContent", "ifPresent": "comment"},
+    {"path": "comment.url", "ifPresent": "comment"},
+    {"path": "comment.video", "ifPresent": "comment"}
+  ],
+  "notes": [
+    "Not checked: the text, image or video requirement does not apply to a post represented on another page through an external url.",
+    "SocialMediaPosting is accepted with the same requirements.",
+    "Post needs one of text, image or video; this is NOT required for a post represented on another page via external url (later pages / category pages).",
+    "Comment: author, datePublished and one of text/image/video required.",
+    "InteractionCounter: userInteractionCount required; interactionType is an Action subtype (post: LikeAction, DislikeAction, ViewAction, CommentAction or ReplyAction, ShareAction). creativeWorkStatus=Deleted for retained deleted posts. sharedContent may be WebPage, ImageObject, VideoObject, DiscussionForumPosting or Comment. url: canonical URL (first page for multi-page threads). headline not recommended for SocialMediaPosting.",
+    "If the forum is question-and-answer shaped use Q&A markup instead."
+  ]
+}

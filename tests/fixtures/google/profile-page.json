@@ -1,0 +1,15 @@
+{
+  "valid": {
+    "@type": "ProfilePage",
+    "mainEntity": {
+      "@type": "Person",
+      "name": "Jane Doe"
+    }
+  },
+  "missing": {
+    "property": "mainEntity",
+    "jsonld": {
+      "@type": "ProfilePage"
+    }
+  }
+}

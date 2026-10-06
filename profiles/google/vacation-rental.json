@@ -1,0 +1,50 @@
+{
+  "id": "google/vacation-rental",
+  "title": "Google Vacation rental",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/vacation-rental",
+  "checked": "2026-09-08",
+  "status": "limited",
+  "statusNote": "Limited access: for sites already connected with a Google Technical Account Manager with Hotel Center access (interest form).",
+  "types": ["VacationRental"],
+  "required": [
+    "containsPlace",
+    {"path": "containsPlace.occupancy", "ifPresent": "containsPlace"},
+    {"path": "containsPlace.occupancy.value", "ifPresent": "containsPlace.occupancy"},
+    "identifier",
+    "image",
+    {"anyOf": ["latitude", "geo.latitude"]},
+    {"anyOf": ["longitude", "geo.longitude"]},
+    "name"
+  ],
+  "recommended": [
+    "additionalType",
+    "address",
+    {"path": "address.addressCountry", "ifPresent": "address"},
+    {"path": "address.addressLocality", "ifPresent": "address"},
+    {"path": "address.addressRegion", "ifPresent": "address"},
+    {"path": "address.postalCode", "ifPresent": "address"},
+    {"path": "address.streetAddress", "ifPresent": "address"},
+    "aggregateRating",
+    "brand",
+    "checkinTime",
+    "checkoutTime",
+    {"path": "containsPlace.additionalType", "ifPresent": "containsPlace"},
+    {"path": "containsPlace.amenityFeature", "ifPresent": "containsPlace"},
+    {"path": "containsPlace.bed", "ifPresent": "containsPlace"},
+    {"path": "containsPlace.bed.numberOfBeds", "ifPresent": "containsPlace.bed"},
+    {"path": "containsPlace.bed.typeOfBed", "ifPresent": "containsPlace.bed"},
+    {"path": "containsPlace.floorSize", "ifPresent": "containsPlace"},
+    {"path": "containsPlace.numberOfBathroomsTotal", "ifPresent": "containsPlace"},
+    {"path": "containsPlace.numberOfBedrooms", "ifPresent": "containsPlace"},
+    {"path": "containsPlace.numberOfRooms", "ifPresent": "containsPlace"},
+    "description",
+    "knowsLanguage",
+    "review",
+    {"path": "review.datePublished", "ifPresent": "review"}
+  ],
+  "notes": [
+    "Not checked: review.contentReferenceTime is required for listings in France.",
+    "Not checked: containsPlace must hold exactly one Accommodation, and image needs at least 8 photos.",
+    "image: repeated URL, minimum 8 photos (at least one each of bedroom, bathroom, common area) plus property image requirements. latitude/longitude precision at least 5 decimals. containsPlace must hold exactly one Accommodation. review.datePublished is required (page note) for vacation rentals when reviews are given; review.contentReferenceTime (start of stay) is required for listings in France. containsPlace.additionalType values: EntirePlace, PrivateRoom, SharedRoom. additionalType suggested: Apartment, Bungalow, Cabin, Chalet, Cottage, Gite, HolidayVillageRental, House, Villa, VacationRental. amenityFeature name values (English only) include ac, airportShuttle, balcony, beachAccess, childFriendly, crib, elevator, fireplace, freeBreakfast, gymFitnessEquipment, heating, hotTub, instantBookable, ironingBoard, kitchen, microwave, outdoorGrill, ovenStove, patio, petsAllowed, pool, privateBeachAccess, selfCheckinCheckout, smokingAllowed, tv, washerDryer, wheelchairAccessible, wifi, plus non-boolean internetType, parkingType, poolType, licenseNum. floorSize unitCode FTK/SQFT or MTK/SQM."
+  ]
+}

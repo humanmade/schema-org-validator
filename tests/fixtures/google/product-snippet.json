@@ -1,0 +1,22 @@
+{
+  "valid": {
+    "@type": "Product",
+    "name": "Widget",
+    "offers": {
+      "@type": "Offer",
+      "price": "10.00",
+      "priceCurrency": "USD"
+    }
+  },
+  "missing": {
+    "property": "name",
+    "jsonld": {
+      "@type": "Product",
+      "offers": {
+        "@type": "Offer",
+        "price": "10.00",
+        "priceCurrency": "USD"
+      }
+    }
+  }
+}

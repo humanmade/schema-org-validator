@@ -1,0 +1,12 @@
+{
+  "id": "google/course-info",
+  "title": "Google Course info",
+  "source": "https://developers.google.com/search/updates",
+  "checked": "2026-10-06",
+  "status": "deprecated",
+  "statusNote": "Google removed Course info structured data from Search in September 2025.",
+  "types": ["Course"],
+  "required": [],
+  "recommended": [],
+  "notes": []
+}

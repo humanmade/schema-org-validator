@@ -1,0 +1,16 @@
+{
+  "valid": {
+    "@type": "VideoObject",
+    "name": "Intro",
+    "thumbnailUrl": "https://example.com/t.jpg",
+    "uploadDate": "2030-01-01"
+  },
+  "missing": {
+    "property": "uploadDate",
+    "jsonld": {
+      "@type": "VideoObject",
+      "name": "Intro",
+      "thumbnailUrl": "https://example.com/t.jpg"
+    }
+  }
+}
