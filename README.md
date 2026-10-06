@@ -36,6 +36,8 @@ The input can be a single node, a list of nodes, or an object with `@context` an
 
 A node with an `@id` and other keys is a definition. An object with only an `@id` is a reference, and is checked against the node it points to when that node is in the graph.
 
+When several definitions share an `@id`, they are treated as one node, as in JSON-LD node merging. Their types are combined and the values of each property are joined. Profile rules and reference paths see the merged node. Schema.org checks still report each problem at the path of the object that has it.
+
 `new Validator()` uses the bundled vocabulary. Pass your own `Vocabulary` as the first argument to use other data. Any further arguments are profiles.
 
 `Report::isValid()` is true when there are no errors. Warnings and notices do not make a report invalid.
@@ -102,8 +104,8 @@ $profile = HumanMade\SchemaOrgValidator\RuleProfile::fromFile('my-profile.json')
 A rule is one of these:
 
 - A property path such as `"headline"`, or a nested path such as `"offers.price"`.
-- `{ "anyOf": [path, ...] }`, which passes when any path is present.
-- `{ "path": "offers.price", "ifPresent": "offers" }`, which is only checked when the `ifPresent` path has a value.
+- `{ "anyOf": [path, ...] }`, which passes when any path is present. When every path starts with the same segments, such as `offers.price` and `offers.priceSpecification.price`, each value at that shared path (each offer) must have at least one of the paths after it.
+- `{ "path": "offers.price", "ifPresent": "offers" }`, which is only checked when the `ifPresent` path has a value. When `ifPresent` is the start of `path`, as here, the rest of the path is checked on each value that exists. An offer without `price` is reported, and a missing `offers` is not. When `ifPresent` is a different property, the whole rule is checked if that property has a value anywhere.
 
 A rule object can also have `"types": ["Review"]`, which limits it to nodes of those types or their subtypes. Use this when one profile covers several root types with different rules.
 

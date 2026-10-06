@@ -90,6 +90,196 @@ final class RuleProfileTest extends TestCase
         $this->assertSame('image or thumbnailUrl', $issues[0]->property());
     }
 
+    public function testAnyOfIsCheckedPerValueAtTheSharedPrefix(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['anyOf' => ['offers.price', 'offers.priceSpecification.price']],
+        ]];
+        $product = [
+            '@type' => 'Product',
+            'offers' => [
+                ['@type' => 'Offer', 'price' => '10'],
+                ['@type' => 'Offer', 'priceSpecification' => ['@type' => 'PriceSpecification', 'price' => '12']],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $product));
+
+        $product['offers'][] = ['@type' => 'Offer', 'url' => 'https://example.com/offer'];
+        $issues = $this->validateWith($profile, $product);
+        $this->assertSame(
+            ['missing_required /offers/2 offers.price or offers.priceSpecification.price'],
+            $this->summary($issues)
+        );
+
+        unset($product['offers']);
+        $this->assertSame(
+            ['missing_required  offers.price or offers.priceSpecification.price'],
+            $this->summary($this->validateWith($profile, $product))
+        );
+    }
+
+    public function testAnyOfSharedPrefixFollowsReferences(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [['anyOf' => ['offers.price', 'offers.lowPrice']]]];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Product', 'offers' => [['@id' => '#one'], ['@id' => '#two']]],
+                ['@type' => 'Offer', '@id' => '#one', 'price' => '10'],
+                ['@type' => 'AggregateOffer', '@id' => '#two', 'url' => 'https://example.com/two'],
+            ],
+        ];
+
+        $this->assertSame(
+            ['missing_required /@graph/2 offers.price or offers.lowPrice'],
+            $this->summary($this->validateWith($profile, $graph))
+        );
+
+        $graph['@graph'][2]['lowPrice'] = '5';
+        $this->assertSame([], $this->validateWith($profile, $graph));
+    }
+
+    public function testAnyOfWithoutASharedPrefixNeedsOneAlternativeOnTheNode(): void
+    {
+        $profile = ['required' => [['anyOf' => ['author.name', 'publisher.name']]]];
+        $article = [
+            '@type' => 'Article',
+            'author' => [['@type' => 'Person', 'name' => 'Jane'], ['@type' => 'Person']],
+            'publisher' => ['@type' => 'Organization', 'name' => 'Acme'],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $article));
+
+        unset($article['publisher']);
+        $this->assertSame(
+            ['missing_required /author/1 author.name or publisher.name'],
+            $this->summary($this->validateWith($profile, $article))
+        );
+    }
+
+    public function testAnyOfSharedPrefixRespectsIfPresent(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['anyOf' => ['offers.price', 'offers.lowPrice'], 'ifPresent' => 'offers'],
+        ]];
+
+        $this->assertSame([], $this->validateWith($profile, ['@type' => 'Product']));
+        $this->assertCount(1, $this->validateWith($profile, ['@type' => 'Product', 'offers' => ['@type' => 'Offer']]));
+    }
+
+    public function testIfPresentOnAPrefixChecksEachValueThatExists(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['path' => 'offers.priceSpecification.price', 'ifPresent' => 'offers.priceSpecification'],
+        ]];
+        $product = [
+            '@type' => 'Product',
+            'offers' => [
+                ['@type' => 'Offer', 'price' => '10'],
+                ['@type' => 'Offer', 'priceSpecification' => ['@type' => 'PriceSpecification', 'price' => '12']],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $product));
+
+        $product['offers'][] = [
+            '@type' => 'Offer',
+            'priceSpecification' => ['@type' => 'PriceSpecification', 'priceCurrency' => 'USD'],
+        ];
+        $this->assertSame(
+            ['missing_required /offers/2/priceSpecification offers.priceSpecification.price'],
+            $this->summary($this->validateWith($profile, $product))
+        );
+    }
+
+    public function testIfPresentOnAPrefixFollowsReferencesAndAnyOf(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [[
+            'anyOf' => ['offers.shippingDetails.shippingRate.value', 'offers.shippingDetails.shippingRate.maxValue'],
+            'ifPresent' => 'offers.shippingDetails',
+        ]]];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Product', 'offers' => [
+                    ['@type' => 'Offer'],
+                    ['@type' => 'Offer', 'shippingDetails' => ['@id' => '#ship']],
+                ]],
+                ['@type' => 'OfferShippingDetails', '@id' => '#ship', 'shippingRate' => [
+                    ['@type' => 'MonetaryAmount', 'value' => '1'],
+                    ['@type' => 'MonetaryAmount', 'maxValue' => '5'],
+                ]],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $graph));
+
+        $graph['@graph'][1]['shippingRate'][] = ['@type' => 'MonetaryAmount', 'currency' => 'USD'];
+        $issues = $this->validateWith($profile, $graph);
+        $this->assertCount(1, $issues);
+        $this->assertSame('missing_required', $issues[0]->code());
+        $this->assertSame('/@graph/1/shippingRate/2', $issues[0]->path());
+    }
+
+    public function testIfPresentThatIsNotAPrefixStillGatesTheWholeRule(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['path' => 'offers.price', 'ifPresent' => 'review'],
+        ]];
+        $product = ['@type' => 'Product', 'offers' => [['@type' => 'Offer', 'price' => '1'], ['@type' => 'Offer']]];
+
+        $this->assertSame([], $this->validateWith($profile, $product));
+
+        $product['review'] = ['@type' => 'Review'];
+        $this->assertSame(
+            ['missing_required /offers/1 offers.price'],
+            $this->summary($this->validateWith($profile, $product))
+        );
+    }
+
+    public function testGoogleProductProfilesAcceptOffersThatUseDifferentPriceProperties(): void
+    {
+        $product = [
+            '@type' => 'Product',
+            'name' => 'Widget',
+            'image' => 'https://example.com/widget.jpg',
+            'offers' => [
+                ['@type' => 'Offer', 'price' => '10', 'priceCurrency' => 'USD'],
+                [
+                    '@type' => 'Offer',
+                    'priceSpecification' => [
+                        '@type' => 'PriceSpecification',
+                        'price' => '12',
+                        'priceCurrency' => 'USD',
+                    ],
+                ],
+            ],
+        ];
+        $validator = new Validator(null, ...Profiles::google('google/merchant-listing', 'google/product-snippet'));
+        $anyOf = [
+            'offers.price or offers.priceSpecification.price',
+            'offers.priceCurrency or offers.priceSpecification.priceCurrency',
+        ];
+        $properties = static fn (array $issues): array => array_map(
+            static fn (Issue $i): ?string => $i->property(),
+            array_filter($issues, static fn (Issue $i): bool => $i->code() === 'missing_required')
+        );
+
+        $found = $properties($validator->validate($product)->issues());
+        $this->assertSame([], array_intersect($found, $anyOf));
+        $this->assertSame([], array_filter(
+            $found,
+            static fn (?string $p): bool => str_contains((string) $p, 'priceSpecification')
+        ));
+        $this->assertSame([], array_filter(
+            (new Validator(null, ...Profiles::google('google/product-snippet')))->validate($product)->errors(),
+            static fn (Issue $i): bool => $i->source() === 'google/product-snippet'
+        ));
+
+        $product['offers'][] = ['@type' => 'Offer', 'url' => 'https://example.com/offer'];
+        $found = $properties($validator->validate($product)->issues());
+        $this->assertSame($anyOf, array_values(array_intersect($found, $anyOf)));
+    }
+
     public function testNestedPathThroughAnArray(): void
     {
         $profile = ['required' => ['author.name']];
@@ -123,6 +313,52 @@ final class RuleProfileTest extends TestCase
 
         $graph['@graph'][1]['name'] = 'Jane';
         $this->assertSame([], $this->validateWith($profile, $graph));
+    }
+
+    public function testDefinitionsOfOneIdAreMergedBeforeProfileRules(): void
+    {
+        $profile = ['types' => ['Organization'], 'required' => ['name', 'url']];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Organization', '@id' => '#org', 'name' => 'Acme'],
+                ['@type' => 'Article', 'publisher' => ['@id' => '#org']],
+                ['@type' => 'Organization', '@id' => '#org', 'url' => 'https://example.com/'],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $graph));
+
+        unset($graph['@graph'][2]['url']);
+        $this->assertSame(
+            ['missing_required /@graph/0 url'],
+            $this->summary($this->validateWith($profile, $graph))
+        );
+    }
+
+    public function testMergedDefinitionsAreVisibleToPathsThroughReferences(): void
+    {
+        $profile = ['required' => ['author.name']];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Article', 'author' => ['@id' => '#jane']],
+                ['@type' => 'Person', '@id' => '#jane', 'url' => 'https://example.com/jane'],
+                ['@type' => 'Person', '@id' => '#jane', 'name' => 'Jane'],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $graph));
+    }
+
+    public function testVocabularyIssuesStayOnTheirOwnDefinition(): void
+    {
+        $issues = $this->validateWith([], [
+            '@graph' => [
+                ['@type' => 'Organization', '@id' => '#org', 'name' => 'Acme'],
+                ['@type' => 'Organization', '@id' => '#org', 'notAProperty' => 'x'],
+            ],
+        ]);
+
+        $this->assertSame(['unknown_property /@graph/1/notAProperty notAProperty'], $this->summary($issues));
     }
 
     public function testNestedPathThroughAnUndefinedReferenceIsMissing(): void

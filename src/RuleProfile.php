@@ -11,6 +11,8 @@ use InvalidArgumentException;
  *
  * A rule is a property path such as `headline` or `offers.price`, `{"anyOf": [path, ...]}`, or
  * `{"path": path, "ifPresent": path}`. Paths follow arrays and `{"@id"}` references to nodes in the graph.
+ * The alternatives of an `anyOf` rule that start with the same segments share them: each value at that shared
+ * path must satisfy at least one alternative.
  * An object rule may also have `types`, which limits it to nodes of those types or their subtypes.
  */
 final class RuleProfile implements Profile
@@ -198,18 +200,21 @@ final class RuleProfile implements Profile
         if ($rule['types'] !== null && !$this->matches($node, $rule['types'], $graph->vocabulary())) {
             return;
         }
-        if ($rule['ifPresent'] !== null && !$this->exists($node->data(), explode('.', $rule['ifPresent']), $graph)) {
-            return;
-        }
 
         $name = implode(' or ', $rule['alternatives']);
-        $sites = [];
-        foreach ($rule['alternatives'] as $alternative) {
-            $missing = $this->missing($node->data(), $node->path(), explode('.', $alternative), $graph);
-            if ($missing === []) {
+        $alternatives = array_map(static fn (string $path): array => explode('.', $path), $rule['alternatives']);
+
+        if ($rule['ifPresent'] === null) {
+            $sites = $this->unsatisfied($node->data(), $node->path(), $alternatives, $graph);
+        } else {
+            $condition = explode('.', $rule['ifPresent']);
+            if ($this->isPrefixOfAll($condition, $alternatives)) {
+                $sites = $this->unsatisfiedPerValue($node, $condition, $alternatives, $graph);
+            } elseif ($this->exists($node->data(), $condition, $graph)) {
+                $sites = $this->unsatisfied($node->data(), $node->path(), $alternatives, $graph);
+            } else {
                 return;
             }
-            $sites = $sites === [] ? $missing : $sites;
         }
 
         foreach (array_unique($sites) as $site) {
@@ -222,6 +227,157 @@ final class RuleProfile implements Profile
                 $name
             );
         }
+    }
+
+    /**
+     * The leading segments every path starts with.
+     *
+     * @param list<list<string>> $paths
+     * @return list<string>
+     */
+    private function commonPrefix(array $paths): array
+    {
+        $prefix = $paths[0];
+        foreach ($paths as $segments) {
+            $length = 0;
+            while (isset($prefix[$length], $segments[$length]) && $prefix[$length] === $segments[$length]) {
+                $length++;
+            }
+            $prefix = array_slice($prefix, 0, $length);
+        }
+
+        return $prefix;
+    }
+
+    /**
+     * @param list<list<string>> $paths
+     * @return list<list<string>>
+     */
+    private function suffixes(array $paths, int $skip): array
+    {
+        return array_map(static fn (array $segments): array => array_slice($segments, $skip), $paths);
+    }
+
+    /**
+     * @param list<string> $prefix
+     * @param list<list<string>> $paths
+     */
+    private function isPrefixOfAll(array $prefix, array $paths): bool
+    {
+        foreach ($paths as $segments) {
+            if (array_slice($segments, 0, count($prefix)) !== $prefix) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Applies the rule to each value of the `ifPresent` path that exists, using what follows that path.
+     *
+     * @param list<string> $condition
+     * @param list<list<string>> $alternatives
+     * @return list<string>
+     */
+    private function unsatisfiedPerValue(Node $node, array $condition, array $alternatives, Graph $graph): array
+    {
+        $suffixes = $this->suffixes($alternatives, count($condition));
+        if (in_array([], $suffixes, true)) {
+            return [];
+        }
+
+        $sites = [];
+        foreach ($this->resolve($node->data(), $node->path(), $condition, $graph) as [$value, $valuePath]) {
+            $target = $this->descend($value, $valuePath, $graph);
+            if ($target === null) {
+                $sites[] = $valuePath;
+                continue;
+            }
+            foreach ($this->unsatisfied($target[0], $target[1], $suffixes, $graph) as $site) {
+                $sites[] = $site;
+            }
+        }
+
+        return $sites;
+    }
+
+    /**
+     * Paths of the objects that satisfy none of the alternatives; empty when the rule holds.
+     *
+     * Alternatives that share leading segments are checked per value at that shared path: each value needs
+     * at least one alternative's remaining segments. Otherwise the object needs one alternative in full.
+     *
+     * @param array<mixed> $data
+     * @param list<list<string>> $alternatives
+     * @return list<string>
+     */
+    private function unsatisfied(array $data, string $path, array $alternatives, Graph $graph): array
+    {
+        $prefix = count($alternatives) > 1 ? $this->commonPrefix($alternatives) : [];
+        if ($prefix === []) {
+            $sites = [];
+            foreach ($alternatives as $segments) {
+                $missing = $this->missing($data, $path, $segments, $graph);
+                if ($missing === []) {
+                    return [];
+                }
+                $sites = $sites === [] ? $missing : $sites;
+            }
+
+            return $sites;
+        }
+
+        $sites = $this->missing($data, $path, $prefix, $graph);
+        $suffixes = $this->suffixes($alternatives, count($prefix));
+        if (in_array([], $suffixes, true)) {
+            return $sites;
+        }
+
+        foreach ($this->resolve($data, $path, $prefix, $graph) as [$value, $valuePath]) {
+            $target = $this->descend($value, $valuePath, $graph);
+            if ($target === null) {
+                $sites[] = $valuePath;
+                continue;
+            }
+            foreach ($suffixes as $suffix) {
+                if ($this->missing($target[0], $target[1], $suffix, $graph) === []) {
+                    continue 2;
+                }
+            }
+            $sites[] = $target[1];
+        }
+
+        return $sites;
+    }
+
+    /**
+     * The values at the end of the path, following arrays and references, each with its path.
+     *
+     * @param array<mixed> $data
+     * @param list<string> $segments
+     * @return list<array{mixed, string}>
+     */
+    private function resolve(array $data, string $path, array $segments, Graph $graph): array
+    {
+        $segment = (string) array_shift($segments);
+        $items = $this->items($data[$segment] ?? null, Terms::child($path, $segment));
+        if ($segments === []) {
+            return $items;
+        }
+
+        $values = [];
+        foreach ($items as [$item, $itemPath]) {
+            $target = $this->descend($item, $itemPath, $graph);
+            if ($target === null) {
+                continue;
+            }
+            foreach ($this->resolve($target[0], $target[1], $segments, $graph) as $value) {
+                $values[] = $value;
+            }
+        }
+
+        return $values;
     }
 
     /**

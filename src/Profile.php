@@ -16,6 +16,7 @@ interface Profile
 
     /**
      * Checks one node. Called for every node in the graph, so the profile decides whether it applies.
+     * Definitions that share an `@id` arrive as one merged node.
      *
      * @return list<Issue>
      */
