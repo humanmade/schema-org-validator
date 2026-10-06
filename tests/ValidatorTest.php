@@ -94,6 +94,8 @@ final class ValidatorTest extends TestCase
         $this->assertSame(['invalid_json'], $this->codes($report));
         $this->assertFalse($report->isValid());
         $this->assertSame(['invalid_json'], $this->codes($this->validator->validate('"just text"')));
+        $this->assertSame(['invalid_json'], $this->codes($this->validator->validate('[1]')));
+        $this->assertSame(['invalid_json'], $this->codes($this->validator->validate('[{}, 1]')));
     }
 
     public function testIssueDetails(): void

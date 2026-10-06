@@ -38,6 +38,14 @@ final class Validator
             }
         }
 
+        if (Terms::isList($jsonld)) {
+            foreach ($jsonld as $entry) {
+                if (!is_array($entry)) {
+                    return $this->invalidJson('The JSON-LD must be an object or a list of objects.');
+                }
+            }
+        }
+
         $graph = new Graph($jsonld, $this->vocabulary);
         $issues = (new VocabularyChecker($this->vocabulary))->check($graph);
 
