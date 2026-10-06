@@ -1,0 +1,7 @@
+{
+  "@type": "Article",
+  "author": {
+    "@type": "Product",
+    "name": "Widget"
+  }
+}
