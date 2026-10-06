@@ -81,7 +81,12 @@ final class VocabularyChecker
             $this->checkLifecycle($property, 'Property', $path, $nodeType, $property);
 
             $hasDomains = $this->vocabulary->domainsOf($property) !== [];
-            if ($knownTypes !== [] && $hasDomains && !$this->appliesToAny($property, $knownTypes)) {
+            if (
+                $knownTypes !== []
+                && $hasDomains
+                && !$this->isRole($knownTypes)
+                && !$this->appliesToAny($property, $knownTypes)
+            ) {
                 $this->add(
                     Issue::ERROR,
                     'property_not_for_type',
@@ -168,7 +173,7 @@ final class VocabularyChecker
     private function checkObjectTypes(array $types, string $path, ?string $nodeType, string $property): void
     {
         $ranges = $this->vocabulary->rangesOf($property);
-        if ($ranges === []) {
+        if ($ranges === [] || $this->isRole($types)) {
             return;
         }
         foreach ($types as $type) {
@@ -278,6 +283,23 @@ final class VocabularyChecker
     private function isEnumerationMember(string $range, string $member): bool
     {
         return $this->isEnumerationRange($range) && $this->vocabulary->isEnumerationMember($range, $member);
+    }
+
+    /**
+     * True when a type is a Role. A Role may stand in for the value of any property and carries the real value
+     * under the same property name, which is checked as a property of the Role.
+     *
+     * @param list<string> $types
+     */
+    private function isRole(array $types): bool
+    {
+        foreach ($types as $type) {
+            if ($this->vocabulary->isSubtypeOf($type, 'Role')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

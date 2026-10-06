@@ -345,4 +345,47 @@ final class ValidatorTest extends TestCase
         $this->assertSame('/@type', $issue->path());
         $this->assertSame('Code', $issue->nodeType());
     }
+
+    public function testRoleValueChecksTheNestedValueAgainstTheOuterRanges(): void
+    {
+        $person = ['@type' => 'Person', 'name' => 'Jane'];
+        foreach (['Role', 'OrganizationRole', 'PerformanceRole'] as $role) {
+            $this->assertSame([], $this->codesFor([
+                '@type' => 'Article',
+                'author' => ['@type' => $role, 'roleName' => 'editor', 'author' => $person],
+            ]), $role);
+        }
+
+        $wrong = $this->validator->validate([
+            '@type' => 'Article',
+            'author' => ['@type' => 'Role', 'roleName' => 'editor', 'author' => ['@type' => 'Product']],
+        ]);
+        $this->assertSame(['unexpected_value_type'], $this->codes($wrong));
+        $this->assertSame('/author/author', $wrong->issues()[0]->path());
+
+        $text = $this->validator->validate([
+            '@type' => 'Article',
+            'author' => ['@type' => 'Role', 'author' => 'Jane'],
+        ]);
+        $this->assertSame(['text_for_object'], $this->codes($text));
+        $this->assertSame('/author/author', $text->issues()[0]->path());
+
+        $badDate = $this->validator->validate([
+            '@type' => 'Person',
+            'birthDate' => ['@type' => 'Role', 'birthDate' => 'soon'],
+        ]);
+        $this->assertSame(['invalid_value'], $this->codes($badDate));
+    }
+
+    public function testRoleReferencesAreNotFlagged(): void
+    {
+        $report = $this->validator->validate([
+            '@graph' => [
+                ['@type' => 'Article', 'author' => ['@id' => '#role']],
+                ['@type' => 'Role', '@id' => '#role', 'author' => ['@type' => 'Person', 'name' => 'Jane']],
+            ],
+        ]);
+
+        $this->assertSame([], $report->issues());
+    }
 }

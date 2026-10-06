@@ -11,6 +11,7 @@ use InvalidArgumentException;
  *
  * A rule is a property path such as `headline` or `offers.price`, `{"anyOf": [path, ...]}`, or
  * `{"path": path, "ifPresent": path}`. Paths follow arrays and `{"@id"}` references to nodes in the graph.
+ * An object rule may also have `types`, which limits it to nodes of those types or their subtypes.
  */
 final class RuleProfile implements Profile
 {
@@ -28,10 +29,13 @@ final class RuleProfile implements Profile
     /** @var list<string> */
     private array $types;
 
-    /** @var list<array{alternatives: list<string>, ifPresent: ?string}> */
+    /** @var list<string> */
+    private array $notes;
+
+    /** @var list<array{alternatives: list<string>, ifPresent: ?string, types: ?list<string>}> */
     private array $required;
 
-    /** @var list<array{alternatives: list<string>, ifPresent: ?string}> */
+    /** @var list<array{alternatives: list<string>, ifPresent: ?string, types: ?list<string>}> */
     private array $recommended;
 
     /**
@@ -56,6 +60,7 @@ final class RuleProfile implements Profile
         $this->status = $status;
         $this->statusNote = $this->string($definition, 'statusNote', '');
         $this->types = $this->strings($definition['types'] ?? [], $id, 'types');
+        $this->notes = $this->strings($definition['notes'] ?? [], $id, 'notes');
         $this->required = $this->rules($definition['required'] ?? [], $id, 'required');
         $this->recommended = $this->rules($definition['recommended'] ?? [], $id, 'recommended');
     }
@@ -116,6 +121,16 @@ final class RuleProfile implements Profile
         return $this->types;
     }
 
+    /**
+     * Conditions from the source documentation that the rules cannot express. They are not checked.
+     *
+     * @return list<string>
+     */
+    public function notes(): array
+    {
+        return $this->notes;
+    }
+
     public function check(Node $node, Graph $graph): array
     {
         if (!$this->appliesTo($node, $graph->vocabulary())) {
@@ -148,8 +163,16 @@ final class RuleProfile implements Profile
 
     private function appliesTo(Node $node, Vocabulary $vocabulary): bool
     {
+        return $this->matches($node, $this->types, $vocabulary);
+    }
+
+    /**
+     * @param list<string> $types
+     */
+    private function matches(Node $node, array $types, Vocabulary $vocabulary): bool
+    {
         foreach ($node->types() as $type) {
-            foreach ($this->types as $profileType) {
+            foreach ($types as $profileType) {
                 if ($vocabulary->isSubtypeOf($type, $profileType)) {
                     return true;
                 }
@@ -160,7 +183,7 @@ final class RuleProfile implements Profile
     }
 
     /**
-     * @param array{alternatives: list<string>, ifPresent: ?string} $rule
+     * @param array{alternatives: list<string>, ifPresent: ?string, types: ?list<string>} $rule
      * @param list<Issue> $issues
      */
     private function checkRule(
@@ -172,6 +195,9 @@ final class RuleProfile implements Profile
         Graph $graph,
         array &$issues
     ): void {
+        if ($rule['types'] !== null && !$this->matches($node, $rule['types'], $graph->vocabulary())) {
+            return;
+        }
         if ($rule['ifPresent'] !== null && !$this->exists($node->data(), explode('.', $rule['ifPresent']), $graph)) {
             return;
         }
@@ -344,7 +370,7 @@ final class RuleProfile implements Profile
 
     /**
      * @param mixed $rules
-     * @return list<array{alternatives: list<string>, ifPresent: ?string}>
+     * @return list<array{alternatives: list<string>, ifPresent: ?string, types: ?list<string>}>
      */
     private function rules($rules, string $id, string $key): array
     {
@@ -355,17 +381,26 @@ final class RuleProfile implements Profile
         $parsed = [];
         foreach ($rules as $rule) {
             if (is_string($rule)) {
-                $parsed[] = ['alternatives' => $this->strings([$rule], $id, $key), 'ifPresent' => null];
+                $parsed[] = [
+                    'alternatives' => $this->strings([$rule], $id, $key),
+                    'ifPresent' => null,
+                    'types' => null,
+                ];
             } elseif (is_array($rule) && isset($rule['anyOf'])) {
                 $alternatives = $this->strings($rule['anyOf'], $id, $key);
                 if ($alternatives === []) {
                     throw new InvalidArgumentException("Profile \"{$id}\" has an empty anyOf in \"{$key}\".");
                 }
-                $parsed[] = ['alternatives' => $alternatives, 'ifPresent' => $this->optionalPath($rule, $id, $key)];
+                $parsed[] = [
+                    'alternatives' => $alternatives,
+                    'ifPresent' => $this->optionalPath($rule, $id, $key),
+                    'types' => $this->optionalTypes($rule, $id, $key),
+                ];
             } elseif (is_array($rule) && isset($rule['path'])) {
                 $parsed[] = [
                     'alternatives' => $this->strings([$rule['path']], $id, $key),
                     'ifPresent' => $this->optionalPath($rule, $id, $key),
+                    'types' => $this->optionalTypes($rule, $id, $key),
                 ];
             } else {
                 throw new InvalidArgumentException("Profile \"{$id}\" has an invalid rule in \"{$key}\".");
@@ -373,6 +408,15 @@ final class RuleProfile implements Profile
         }
 
         return $parsed;
+    }
+
+    /**
+     * @param array<mixed> $rule
+     * @return list<string>|null
+     */
+    private function optionalTypes(array $rule, string $id, string $key): ?array
+    {
+        return isset($rule['types']) ? $this->strings($rule['types'], $id, $key) : null;
     }
 
     /**
