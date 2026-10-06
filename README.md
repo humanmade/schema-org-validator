@@ -36,6 +36,8 @@ The input can be a single node, a list of nodes, or an object with `@context` an
 
 A node with an `@id` and other keys is a definition. An object with only an `@id` is a reference, and is checked against the node it points to when that node is in the graph.
 
+When several definitions share an `@id`, they are treated as one node, as in JSON-LD node merging. Their types are combined and the values of each property are joined. Profile rules and reference paths see the merged node. Schema.org checks still report each problem at the path of the object that has it.
+
 `new Validator()` uses the bundled vocabulary. Pass your own `Vocabulary` as the first argument to use other data. Any further arguments are profiles.
 
 `Report::isValid()` is true when there are no errors. Warnings and notices do not make a report invalid.

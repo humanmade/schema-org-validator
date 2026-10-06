@@ -14,8 +14,14 @@ final class Graph
     /** @var list<Node> */
     private array $nodes = [];
 
+    /** @var list<Node> */
+    private array $entities = [];
+
     /** @var array<string, Node> */
     private array $definitions = [];
+
+    /** @var array<string, list<Node>> */
+    private array $definitionNodes = [];
 
     /** @var array<string, list<string>> */
     private array $typesById = [];
@@ -35,6 +41,8 @@ final class Graph
             /** @var array<string, mixed> $document */
             $this->walkNode($document, '');
         }
+
+        $this->mergeDefinitions();
     }
 
     public function vocabulary(): Vocabulary
@@ -53,7 +61,17 @@ final class Graph
     }
 
     /**
-     * The first node defined with this `@id`.
+     * Like `nodes()`, but every `@id` defined more than once appears once, as the merged node.
+     *
+     * @return list<Node>
+     */
+    public function entities(): array
+    {
+        return $this->entities;
+    }
+
+    /**
+     * The node defined with this `@id`. Several definitions are merged into one node at the path of the first.
      */
     public function find(string $id): ?Node
     {
@@ -124,6 +142,62 @@ final class Graph
     }
 
     /**
+     * Builds the merged node for each `@id` and the list of nodes with duplicate definitions merged.
+     */
+    private function mergeDefinitions(): void
+    {
+        foreach ($this->definitionNodes as $id => $nodes) {
+            $this->definitions[$id] = count($nodes) === 1 ? $nodes[0] : $this->merge($nodes);
+        }
+
+        $emitted = [];
+        foreach ($this->nodes as $node) {
+            $id = $node->id();
+            $isDefinition = $id !== null && in_array($node, $this->definitionNodes[$id] ?? [], true);
+            if (!$isDefinition) {
+                $this->entities[] = $node;
+            } elseif ($id !== null && !isset($emitted[$id])) {
+                $emitted[$id] = true;
+                $this->entities[] = $this->definitions[$id];
+            }
+        }
+    }
+
+    /**
+     * Combines definitions of one `@id`: values of each property are joined and identical ones dropped.
+     *
+     * @param list<Node> $nodes At least two definitions.
+     */
+    private function merge(array $nodes): Node
+    {
+        $values = [];
+        foreach ($nodes as $node) {
+            foreach ($node->data() as $key => $value) {
+                $values[$key][] = $value;
+            }
+        }
+
+        $data = [];
+        foreach ($values as $key => $found) {
+            if (count($found) === 1) {
+                $data[$key] = $found[0];
+                continue;
+            }
+
+            $unique = [];
+            foreach ($found as $value) {
+                foreach (is_array($value) && Terms::isList($value) ? $value : [$value] as $item) {
+                    $unique[(string) json_encode($item)] = $item;
+                }
+            }
+            $unique = array_values($unique);
+            $data[$key] = count($unique) === 1 ? $unique[0] : $unique;
+        }
+
+        return new Node($data, $nodes[0]->path());
+    }
+
+    /**
      * @param array<string, mixed> $data
      */
     private function walkNode(array $data, string $path): void
@@ -133,7 +207,7 @@ final class Graph
 
         $id = $node->id();
         if ($id !== null && count($data) > 1) {
-            $this->definitions[$id] ??= $node;
+            $this->definitionNodes[$id][] = $node;
             $types = array_merge($this->typesById[$id] ?? [], $node->types());
             $this->typesById[$id] = array_values(array_unique($types));
         }

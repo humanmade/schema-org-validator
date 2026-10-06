@@ -125,6 +125,52 @@ final class RuleProfileTest extends TestCase
         $this->assertSame([], $this->validateWith($profile, $graph));
     }
 
+    public function testDefinitionsOfOneIdAreMergedBeforeProfileRules(): void
+    {
+        $profile = ['types' => ['Organization'], 'required' => ['name', 'url']];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Organization', '@id' => '#org', 'name' => 'Acme'],
+                ['@type' => 'Article', 'publisher' => ['@id' => '#org']],
+                ['@type' => 'Organization', '@id' => '#org', 'url' => 'https://example.com/'],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $graph));
+
+        unset($graph['@graph'][2]['url']);
+        $this->assertSame(
+            ['missing_required /@graph/0 url'],
+            $this->summary($this->validateWith($profile, $graph))
+        );
+    }
+
+    public function testMergedDefinitionsAreVisibleToPathsThroughReferences(): void
+    {
+        $profile = ['required' => ['author.name']];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Article', 'author' => ['@id' => '#jane']],
+                ['@type' => 'Person', '@id' => '#jane', 'url' => 'https://example.com/jane'],
+                ['@type' => 'Person', '@id' => '#jane', 'name' => 'Jane'],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $graph));
+    }
+
+    public function testVocabularyIssuesStayOnTheirOwnDefinition(): void
+    {
+        $issues = $this->validateWith([], [
+            '@graph' => [
+                ['@type' => 'Organization', '@id' => '#org', 'name' => 'Acme'],
+                ['@type' => 'Organization', '@id' => '#org', 'notAProperty' => 'x'],
+            ],
+        ]);
+
+        $this->assertSame(['unknown_property /@graph/1/notAProperty notAProperty'], $this->summary($issues));
+    }
+
     public function testNestedPathThroughAnUndefinedReferenceIsMissing(): void
     {
         $issues = $this->validateWith(['required' => ['author.name']], [

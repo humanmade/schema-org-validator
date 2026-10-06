@@ -50,7 +50,7 @@ final class Validator
         $issues = (new VocabularyChecker($this->vocabulary))->check($graph);
 
         foreach ($this->profiles as $profile) {
-            foreach ($graph->nodes() as $node) {
+            foreach ($graph->entities() as $node) {
                 foreach ($profile->check($node, $graph) as $issue) {
                     $issues[] = $issue;
                 }
