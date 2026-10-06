@@ -167,6 +167,75 @@ final class RuleProfileTest extends TestCase
         $this->assertCount(1, $this->validateWith($profile, ['@type' => 'Product', 'offers' => ['@type' => 'Offer']]));
     }
 
+    public function testIfPresentOnAPrefixChecksEachValueThatExists(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['path' => 'offers.priceSpecification.price', 'ifPresent' => 'offers.priceSpecification'],
+        ]];
+        $product = [
+            '@type' => 'Product',
+            'offers' => [
+                ['@type' => 'Offer', 'price' => '10'],
+                ['@type' => 'Offer', 'priceSpecification' => ['@type' => 'PriceSpecification', 'price' => '12']],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $product));
+
+        $product['offers'][] = [
+            '@type' => 'Offer',
+            'priceSpecification' => ['@type' => 'PriceSpecification', 'priceCurrency' => 'USD'],
+        ];
+        $this->assertSame(
+            ['missing_required /offers/2/priceSpecification offers.priceSpecification.price'],
+            $this->summary($this->validateWith($profile, $product))
+        );
+    }
+
+    public function testIfPresentOnAPrefixFollowsReferencesAndAnyOf(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [[
+            'anyOf' => ['offers.shippingDetails.shippingRate.value', 'offers.shippingDetails.shippingRate.maxValue'],
+            'ifPresent' => 'offers.shippingDetails',
+        ]]];
+        $graph = [
+            '@graph' => [
+                ['@type' => 'Product', 'offers' => [
+                    ['@type' => 'Offer'],
+                    ['@type' => 'Offer', 'shippingDetails' => ['@id' => '#ship']],
+                ]],
+                ['@type' => 'OfferShippingDetails', '@id' => '#ship', 'shippingRate' => [
+                    ['@type' => 'MonetaryAmount', 'value' => '1'],
+                    ['@type' => 'MonetaryAmount', 'maxValue' => '5'],
+                ]],
+            ],
+        ];
+
+        $this->assertSame([], $this->validateWith($profile, $graph));
+
+        $graph['@graph'][1]['shippingRate'][] = ['@type' => 'MonetaryAmount', 'currency' => 'USD'];
+        $issues = $this->validateWith($profile, $graph);
+        $this->assertCount(1, $issues);
+        $this->assertSame('missing_required', $issues[0]->code());
+        $this->assertSame('/@graph/1/shippingRate/2', $issues[0]->path());
+    }
+
+    public function testIfPresentThatIsNotAPrefixStillGatesTheWholeRule(): void
+    {
+        $profile = ['types' => ['Product'], 'required' => [
+            ['path' => 'offers.price', 'ifPresent' => 'review'],
+        ]];
+        $product = ['@type' => 'Product', 'offers' => [['@type' => 'Offer', 'price' => '1'], ['@type' => 'Offer']]];
+
+        $this->assertSame([], $this->validateWith($profile, $product));
+
+        $product['review'] = ['@type' => 'Review'];
+        $this->assertSame(
+            ['missing_required /offers/1 offers.price'],
+            $this->summary($this->validateWith($profile, $product))
+        );
+    }
+
     public function testGoogleProductProfilesAcceptOffersThatUseDifferentPriceProperties(): void
     {
         $product = [
@@ -197,6 +266,10 @@ final class RuleProfileTest extends TestCase
 
         $found = $properties($validator->validate($product)->issues());
         $this->assertSame([], array_intersect($found, $anyOf));
+        $this->assertSame([], array_filter(
+            $found,
+            static fn (?string $p): bool => str_contains((string) $p, 'priceSpecification')
+        ));
         $this->assertSame([], array_filter(
             (new Validator(null, ...Profiles::google('google/product-snippet')))->validate($product)->errors(),
             static fn (Issue $i): bool => $i->source() === 'google/product-snippet'

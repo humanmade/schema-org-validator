@@ -105,7 +105,7 @@ A rule is one of these:
 
 - A property path such as `"headline"`, or a nested path such as `"offers.price"`.
 - `{ "anyOf": [path, ...] }`, which passes when any path is present. When every path starts with the same segments, such as `offers.price` and `offers.priceSpecification.price`, each value at that shared path (each offer) must have at least one of the paths after it.
-- `{ "path": "offers.price", "ifPresent": "offers" }`, which is only checked when the `ifPresent` path has a value.
+- `{ "path": "offers.price", "ifPresent": "offers" }`, which is only checked when the `ifPresent` path has a value. When `ifPresent` is the start of `path`, as here, the rest of the path is checked on each value that exists. An offer without `price` is reported, and a missing `offers` is not. When `ifPresent` is a different property, the whole rule is checked if that property has a value anywhere.
 
 A rule object can also have `"types": ["Review"]`, which limits it to nodes of those types or their subtypes. Use this when one profile covers several root types with different rules.
 

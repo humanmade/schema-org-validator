@@ -200,24 +200,20 @@ final class RuleProfile implements Profile
         if ($rule['types'] !== null && !$this->matches($node, $rule['types'], $graph->vocabulary())) {
             return;
         }
-        if ($rule['ifPresent'] !== null && !$this->exists($node->data(), explode('.', $rule['ifPresent']), $graph)) {
-            return;
-        }
 
         $name = implode(' or ', $rule['alternatives']);
         $alternatives = array_map(static fn (string $path): array => explode('.', $path), $rule['alternatives']);
-        $prefix = count($alternatives) > 1 ? $this->commonPrefix($alternatives) : [];
 
-        if ($prefix !== []) {
-            $sites = $this->unsatisfied($node, $prefix, $alternatives, $graph);
+        if ($rule['ifPresent'] === null) {
+            $sites = $this->unsatisfied($node->data(), $node->path(), $alternatives, $graph);
         } else {
-            $sites = [];
-            foreach ($alternatives as $segments) {
-                $missing = $this->missing($node->data(), $node->path(), $segments, $graph);
-                if ($missing === []) {
-                    return;
-                }
-                $sites = $sites === [] ? $missing : $sites;
+            $condition = explode('.', $rule['ifPresent']);
+            if ($this->isPrefixOfAll($condition, $alternatives)) {
+                $sites = $this->unsatisfiedPerValue($node, $condition, $alternatives, $graph);
+            } elseif ($this->exists($node->data(), $condition, $graph)) {
+                $sites = $this->unsatisfied($node->data(), $node->path(), $alternatives, $graph);
+            } else {
+                return;
             }
         }
 
@@ -254,23 +250,91 @@ final class RuleProfile implements Profile
     }
 
     /**
-     * Paths of the values at the shared prefix that satisfy none of the alternatives, plus the places the prefix
-     * itself is missing. Each value only has to satisfy one alternative, which is what remains after the prefix.
-     *
+     * @param list<list<string>> $paths
+     * @return list<list<string>>
+     */
+    private function suffixes(array $paths, int $skip): array
+    {
+        return array_map(static fn (array $segments): array => array_slice($segments, $skip), $paths);
+    }
+
+    /**
      * @param list<string> $prefix
+     * @param list<list<string>> $paths
+     */
+    private function isPrefixOfAll(array $prefix, array $paths): bool
+    {
+        foreach ($paths as $segments) {
+            if (array_slice($segments, 0, count($prefix)) !== $prefix) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Applies the rule to each value of the `ifPresent` path that exists, using what follows that path.
+     *
+     * @param list<string> $condition
      * @param list<list<string>> $alternatives
      * @return list<string>
      */
-    private function unsatisfied(Node $node, array $prefix, array $alternatives, Graph $graph): array
+    private function unsatisfiedPerValue(Node $node, array $condition, array $alternatives, Graph $graph): array
     {
-        $sites = $this->missing($node->data(), $node->path(), $prefix, $graph);
-        $suffixes = array_map(static fn (array $path): array => array_slice($path, count($prefix)), $alternatives);
+        $suffixes = $this->suffixes($alternatives, count($condition));
+        if (in_array([], $suffixes, true)) {
+            return [];
+        }
 
+        $sites = [];
+        foreach ($this->resolve($node->data(), $node->path(), $condition, $graph) as [$value, $valuePath]) {
+            $target = $this->descend($value, $valuePath, $graph);
+            if ($target === null) {
+                $sites[] = $valuePath;
+                continue;
+            }
+            foreach ($this->unsatisfied($target[0], $target[1], $suffixes, $graph) as $site) {
+                $sites[] = $site;
+            }
+        }
+
+        return $sites;
+    }
+
+    /**
+     * Paths of the objects that satisfy none of the alternatives; empty when the rule holds.
+     *
+     * Alternatives that share leading segments are checked per value at that shared path: each value needs
+     * at least one alternative's remaining segments. Otherwise the object needs one alternative in full.
+     *
+     * @param array<mixed> $data
+     * @param list<list<string>> $alternatives
+     * @return list<string>
+     */
+    private function unsatisfied(array $data, string $path, array $alternatives, Graph $graph): array
+    {
+        $prefix = count($alternatives) > 1 ? $this->commonPrefix($alternatives) : [];
+        if ($prefix === []) {
+            $sites = [];
+            foreach ($alternatives as $segments) {
+                $missing = $this->missing($data, $path, $segments, $graph);
+                if ($missing === []) {
+                    return [];
+                }
+                $sites = $sites === [] ? $missing : $sites;
+            }
+
+            return $sites;
+        }
+
+        $sites = $this->missing($data, $path, $prefix, $graph);
+        $suffixes = $this->suffixes($alternatives, count($prefix));
         if (in_array([], $suffixes, true)) {
             return $sites;
         }
 
-        foreach ($this->resolve($node->data(), $node->path(), $prefix, $graph) as [$value, $valuePath]) {
+        foreach ($this->resolve($data, $path, $prefix, $graph) as [$value, $valuePath]) {
             $target = $this->descend($value, $valuePath, $graph);
             if ($target === null) {
                 $sites[] = $valuePath;
