@@ -1,0 +1,56 @@
+name: Vocabulary
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: Update schema.org vocabulary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Read the current version
+        id: old
+        run: echo "version=$(php -r "echo (require 'data/vocabulary.php')['version'];")" >> "$GITHUB_OUTPUT"
+
+      - name: Generate the vocabulary
+        id: generate
+        run: echo "version=$(php bin/generate-vocabulary latest)" >> "$GITHUB_OUTPUT"
+
+      - name: PHPUnit
+        id: tests
+        continue-on-error: true
+        run: composer test
+
+      - name: Open or update the pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: vocabulary/update
+          add-paths: data/
+          commit-message: Update schema.org vocabulary to ${{ steps.generate.outputs.version }}
+          title: Update schema.org vocabulary to ${{ steps.generate.outputs.version }}
+          body: |
+            Regenerated `data/vocabulary.php` from schema.org: ${{ steps.old.outputs.version }} → ${{ steps.generate.outputs.version }}.
+
+            Release notes: https://schema.org/docs/releases.html
+
+            Test suite on the regenerated data: ${{ steps.tests.outcome }}.
+
+      - name: Fail when the tests failed
+        if: steps.tests.outcome == 'failure'
+        run: exit 1
