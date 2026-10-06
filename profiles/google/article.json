@@ -1,0 +1,19 @@
+{
+  "id": "google/article",
+  "title": "Google Article rich result",
+  "source": "https://developers.google.com/search/docs/appearance/structured-data/article",
+  "checked": "TODO",
+  "status": "active",
+  "statusNote": "",
+  "types": ["Article", "NewsArticle", "BlogPosting"],
+  "required": [],
+  "recommended": [
+    "author",
+    { "path": "author.name", "ifPresent": "author" },
+    { "path": "author.url", "ifPresent": "author" },
+    "datePublished",
+    "dateModified",
+    "headline",
+    "image"
+  ]
+}

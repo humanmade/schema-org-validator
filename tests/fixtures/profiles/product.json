@@ -1,0 +1,17 @@
+{
+  "id": "test/product",
+  "title": "Test product",
+  "source": "https://example.com/docs",
+  "checked": "2025-01-01",
+  "status": "limited",
+  "statusNote": "Only some regions.",
+  "types": ["Product"],
+  "required": [
+    "name",
+    { "anyOf": ["review", "aggregateRating", "offers"] }
+  ],
+  "recommended": [
+    { "path": "offers.price", "ifPresent": "offers" },
+    "brand"
+  ]
+}
